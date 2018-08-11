@@ -1,13 +1,13 @@
-import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.BlockingDeque;
 
 public class Sequence implements Runnable{
     private final Processor processor;
     private final BlockingDeque<SingleRead> inQueue;
-    private final Queue<AlignedRead> outQueue;
+    private final Queue<AlignedReadSegment> outQueue;
 
-    public Sequence(Processor processor, BlockingDeque inQueue, Queue<AlignedRead> outQueue) {
+    Sequence(Processor processor, BlockingDeque<SingleRead> inQueue, Queue<AlignedReadSegment> outQueue) {
         this.processor = processor;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
@@ -25,7 +25,7 @@ public class Sequence implements Runnable{
 
     private void process() throws InterruptedException {
         SingleRead read = inQueue.take();
-        List<AlignedRead> alignedRead = processor.process(read);
-        outQueue.addAll(alignedRead);
+        Optional<AlignedReadSegment> alignedRead = processor.process(read);
+        alignedRead.ifPresent(outQueue::add);
     }
 }

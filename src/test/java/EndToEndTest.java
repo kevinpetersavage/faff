@@ -24,11 +24,11 @@ public class EndToEndTest {
     public void test(){
         String reference = createRandomReference();
 
-        Set<AlignedRead> reads = readsFrom(reference);
+        Set<AlignedReadSegment> reads = readsFrom(reference);
         Seq<SingleRead> singleReads = regroupToSingleReads(reads);
 
         BlockingDeque<SingleRead> inQueue = new LinkedBlockingDeque<>();
-        Queue<AlignedRead> outQueue = new LinkedBlockingDeque<>();
+        Queue<AlignedReadSegment> outQueue = new LinkedBlockingDeque<>();
 
         Processor processor = new Processor(new ReferenceIndex(), new ReadCache());
         executorService.submit(new Sequence(processor, inQueue, outQueue));
@@ -45,25 +45,25 @@ public class EndToEndTest {
                 .collect(Collectors.joining());
     }
 
-    private Boolean queueAndListAreEqual(Queue outQueue, Set<AlignedRead> reads) {
+    private Boolean queueAndListAreEqual(Queue outQueue, Set<AlignedReadSegment> reads) {
         return new HashSet<>(Arrays.asList(outQueue.toArray())).equals(reads);
     }
 
-    private Seq<SingleRead> regroupToSingleReads(Set<AlignedRead> reads) {
+    private Seq<SingleRead> regroupToSingleReads(Set<AlignedReadSegment> reads) {
         return seq(reads)
                 .zip(Seq.range(0, reads.size()))
                 .flatMap(t -> createSingleReads(t.v1, t.v2));
     }
 
-    private Stream<SingleRead> createSingleReads(AlignedRead read, Integer imageId) {
+    private Stream<SingleRead> createSingleReads(AlignedReadSegment read, Integer imageId) {
         return Seq
                 .range(0, read.getSequence().length())
                 .map(imageLocation -> new SingleRead(read.getSequence().charAt(imageLocation), imageId, imageLocation));
     }
 
-    private Set<AlignedRead> readsFrom(String reference) {
+    private Set<AlignedReadSegment> readsFrom(String reference) {
         return seq(random.ints(0, referenceLength - readLength - 1))
-                .map(i -> new AlignedRead(reference.substring(i, i+readLength), i))
+                .map(i -> new AlignedReadSegment(reference.substring(i, i+readLength), i))
                 .limit(numberOfReads)
                 .toSet();
     }
