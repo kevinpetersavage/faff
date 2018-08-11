@@ -32,7 +32,7 @@ public class EndToEndTest {
         BlockingDeque<SingleRead> inQueue = new LinkedBlockingDeque<>();
         Queue<AlignedReadSegment> outQueue = new LinkedBlockingDeque<>();
 
-        Processor processor = new Processor(new ReferenceIndex(), new ReadCache());
+        Processor processor = new Processor(new ReferenceIndex(), new ReadCache(readLength));
         executorService.submit(new Sequence(processor, inQueue, outQueue));
 
         inQueue.addAll(singleReads.toList());

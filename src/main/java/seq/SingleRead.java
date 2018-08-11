@@ -13,6 +13,10 @@ public class SingleRead {
         this.sourceImageLocation = sourceImageLocation;
     }
 
+    public char getNucleotide() {
+        return nucleotide;
+    }
+
     public int getLocationWithImage() {
         return sourceImageLocation.getLocationWithinImage();
     }
