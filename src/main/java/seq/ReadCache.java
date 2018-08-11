@@ -23,7 +23,7 @@ public class ReadCache {
     public String rollingRead(SingleRead singleRead) throws ExecutionException {
         CircularFifoBuffer buffer = cache.get(singleRead.getLocationWithImage());
         buffer.add(singleRead.getNucleotide());
-        Seq<String> seq = seq(buffer).map(Object::toString); // this will be fixed using commons-collections 4
+        Seq<String> seq = seq(buffer).map(Object::toString);
         return seq.collect(Collectors.joining());
     }
 }
