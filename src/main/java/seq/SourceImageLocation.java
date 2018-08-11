@@ -12,4 +12,8 @@ public class SourceImageLocation {
     public int getLocationWithinImage() {
         return locationWithinImage;
     }
+
+    public int getImageId() {
+        return imageId;
+    }
 }

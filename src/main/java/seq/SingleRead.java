@@ -17,6 +17,10 @@ public class SingleRead {
         return nucleotide;
     }
 
+    public int getImageId() {
+        return sourceImageLocation.getImageId();
+    }
+
     public int getLocationWithImage() {
         return sourceImageLocation.getLocationWithinImage();
     }

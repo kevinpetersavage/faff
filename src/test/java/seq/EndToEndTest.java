@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.jooq.lambda.Seq.seq;
 
 public class EndToEndTest {
@@ -34,11 +35,12 @@ public class EndToEndTest {
 
         inQueue.addAll(singleReads.toList());
 
-        await().atMost(5, SECONDS).until(() -> queueAndListAreEqual(outQueue, reads));
+        await().atMost(5, SECONDS).untilAsserted(() -> queueAndListAreEqual(outQueue, reads));
     }
 
-    private Boolean queueAndListAreEqual(Queue outQueue, Set<AlignedReadSegment> reads) {
-        return new HashSet<>(Arrays.asList(outQueue.toArray())).equals(reads);
+    private boolean queueAndListAreEqual(Queue outQueue, Set<AlignedReadSegment> reads) {
+        assertThat(new HashSet<>(Arrays.asList(outQueue.toArray()))).isEqualTo(reads);
+        return true;
     }
 
     private Seq<SingleRead> regroupToSingleReads(Set<AlignedReadSegment> reads) {
@@ -47,17 +49,17 @@ public class EndToEndTest {
                 .flatMap(t -> createSingleReads(t.v1, t.v2));
     }
 
-    private Stream<SingleRead> createSingleReads(AlignedReadSegment read, Integer imageId) {
+    private Stream<SingleRead> createSingleReads(AlignedReadSegment read, Integer locationWithImage) {
         return Seq
                 .range(0, read.getSequence().length())
-                .map(imageLocation ->
-                        new SingleRead(read.getSequence().charAt(imageLocation),
-                                new SourceImageLocation(imageId, imageLocation)));
+                .map(imageItWouldBeReadFrom ->
+                        new SingleRead(read.getSequence().charAt(imageItWouldBeReadFrom),
+                                new SourceImageLocation(imageItWouldBeReadFrom, locationWithImage)));
     }
 
     private Set<AlignedReadSegment> readsFrom(String reference) {
-        return seq(random.ints(0, referenceLength - readLength - 1))
-                .map(i -> new AlignedReadSegment(reference.substring(i, i+readLength), i))
+        return seq(random.ints(0, referenceLength - readLength))
+                .map(i -> new AlignedReadSegment(reference.substring(i, i + readLength), i))
                 .limit(numberOfReads)
                 .toSet();
     }
