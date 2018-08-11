@@ -9,14 +9,18 @@ import java.util.stream.IntStream;
 import static org.fest.assertions.Assertions.assertThat;
 
 class ReferenceIndexTest {
-    TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
+    private final TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
 
     @Test
     public void testFindsSubReference() throws ExecutionException {
         String noRepeatingReference = nonRepeatingReference();
-        ReferenceIndex referenceIndex = new ReferenceIndex(noRepeatingReference, 5);
-        List<Integer> locations = referenceIndex.find(noRepeatingReference.substring(3, 7));
-        assertThat(locations).containsExactly(3);
+        int indexSubsequenceLength = 5;
+        int startIndex = 3;
+
+        ReferenceIndex referenceIndex = new ReferenceIndex(noRepeatingReference, indexSubsequenceLength);
+        List<Integer> locations = referenceIndex.find(noRepeatingReference.substring(startIndex, startIndex + indexSubsequenceLength));
+
+        assertThat(locations).containsExactly(startIndex);
     }
 
     @Test
@@ -32,9 +36,13 @@ class ReferenceIndexTest {
     public void testFindsMultipleLocationsIfTheyExist() throws ExecutionException {
         String nonRepeatingReference = nonRepeatingReference();
         String repeatingReference = nonRepeatingReference + nonRepeatingReference;
-        ReferenceIndex referenceIndex = new ReferenceIndex(repeatingReference, 5);
-        List<Integer> locations = referenceIndex.find(repeatingReference.substring(3, 7));
-        assertThat(locations).containsExactly(3, 13);
+        int indexSubsequenceLength = 5;
+        int firstStartIndex = 3;
+
+        ReferenceIndex referenceIndex = new ReferenceIndex(repeatingReference, indexSubsequenceLength);
+        List<Integer> locations = referenceIndex.find(repeatingReference.substring(firstStartIndex, firstStartIndex + indexSubsequenceLength));
+
+        assertThat(locations).containsExactly(firstStartIndex, firstStartIndex + nonRepeatingReference.length());
     }
 
     private String nonRepeatingReference() {

@@ -20,7 +20,7 @@ public class ReferenceIndex {
 
     public ReferenceIndex(String reference, int indexSubsequenceLength) throws ExecutionException {
         this.indexSubsequenceLength = indexSubsequenceLength;
-        for (int i = 0; i < reference.length(); i++) {
+        for (int i = 0; i < reference.length() - indexSubsequenceLength; i++) {
             String subReference = reference.substring(i, i + indexSubsequenceLength);
             index.get(subReference).add(i);
         }
