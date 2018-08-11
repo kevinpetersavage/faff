@@ -4,10 +4,7 @@ import org.jooq.lambda.Seq;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -23,7 +20,7 @@ public class EndToEndTest {
     private final TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
 
     @Test
-    public void test(){
+    public void test() throws ExecutionException {
         String reference = testSequenceFactory.createRandomSequence(referenceLength);
 
         Set<AlignedReadSegment> reads = readsFrom(reference);

@@ -3,6 +3,7 @@ package seq;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -11,7 +12,7 @@ class ReferenceIndexTest {
     TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
 
     @Test
-    public void testFindsSubReference(){
+    public void testFindsSubReference() throws ExecutionException {
         String noRepeatingReference = nonRepeatingReference();
         ReferenceIndex referenceIndex = new ReferenceIndex(noRepeatingReference, 5);
         List<Integer> locations = referenceIndex.find(noRepeatingReference.substring(3, 7));
@@ -19,7 +20,7 @@ class ReferenceIndexTest {
     }
 
     @Test
-    public void doesntFindNonSubReference(){
+    public void doesntFindNonSubReference() throws ExecutionException {
         String reference = testSequenceFactory.createRandomSequence(10);
         ReferenceIndex referenceIndex = new ReferenceIndex(reference, 5);
         String cantPossiblyExistInReference = "can't";
@@ -28,7 +29,7 @@ class ReferenceIndexTest {
     }
 
     @Test
-    public void testFindsMultipleLocationsIfTheyExist(){
+    public void testFindsMultipleLocationsIfTheyExist() throws ExecutionException {
         String nonRepeatingReference = nonRepeatingReference();
         String repeatingReference = nonRepeatingReference + nonRepeatingReference;
         ReferenceIndex referenceIndex = new ReferenceIndex(repeatingReference, 5);
