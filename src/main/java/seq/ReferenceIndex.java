@@ -1,3 +1,5 @@
+package seq;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.List;

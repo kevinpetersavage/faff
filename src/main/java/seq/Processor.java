@@ -1,7 +1,8 @@
-import org.jooq.lambda.Seq;
+package seq;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 public class Processor {
     private final ReferenceIndex referenceIndex;
@@ -12,7 +13,7 @@ public class Processor {
         this.readCache = readCache;
     }
 
-    public Optional<AlignedReadSegment> process(SingleRead read) {
+    public Optional<AlignedReadSegment> process(SingleRead read) throws ExecutionException {
         String rollingRead = readCache.rollingRead(read);
         List<Integer> location = referenceIndex.find(rollingRead);
         if (location.size() == 1) {

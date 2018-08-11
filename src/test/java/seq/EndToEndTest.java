@@ -1,3 +1,5 @@
+package seq;
+
 import org.jooq.lambda.Seq;
 import org.junit.jupiter.api.Test;
 
@@ -6,7 +8,6 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -17,12 +18,13 @@ public class EndToEndTest {
     private static final int referenceLength = 10000;
     private static final int readLength = 150;
     private static final int numberOfReads = 100;
-    private static final Random random = new Random();
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final Random random = new Random();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
 
     @Test
     public void test(){
-        String reference = createRandomReference();
+        String reference = testSequenceFactory.createRandomSequence(referenceLength);
 
         Set<AlignedReadSegment> reads = readsFrom(reference);
         Seq<SingleRead> singleReads = regroupToSingleReads(reads);
@@ -38,13 +40,6 @@ public class EndToEndTest {
         await().atMost(5, SECONDS).until(() -> queueAndListAreEqual(outQueue, reads));
     }
 
-    private String createRandomReference() {
-        return random.ints(0, 4)
-                .mapToObj("ATCG"::charAt)
-                .map(Objects::toString).limit(referenceLength)
-                .collect(Collectors.joining());
-    }
-
     private Boolean queueAndListAreEqual(Queue outQueue, Set<AlignedReadSegment> reads) {
         return new HashSet<>(Arrays.asList(outQueue.toArray())).equals(reads);
     }
@@ -58,7 +53,9 @@ public class EndToEndTest {
     private Stream<SingleRead> createSingleReads(AlignedReadSegment read, Integer imageId) {
         return Seq
                 .range(0, read.getSequence().length())
-                .map(imageLocation -> new SingleRead(read.getSequence().charAt(imageLocation), imageId, imageLocation));
+                .map(imageLocation ->
+                        new SingleRead(read.getSequence().charAt(imageLocation),
+                                new SourceImageLocation(imageId, imageLocation)));
     }
 
     private Set<AlignedReadSegment> readsFrom(String reference) {
