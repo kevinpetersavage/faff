@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.IntStream;
 
-public class ReferenceIndex {
+class ReferenceIndex {
     private final int indexSubsequenceLength;
     @SuppressWarnings("Convert2MethodRef")
     private LoadingCache<String, List<Integer>> index =
@@ -18,7 +17,7 @@ public class ReferenceIndex {
                         .newBuilder()
                         .build(CacheLoader.from(() -> new ArrayList<>()));
 
-    public ReferenceIndex(String reference, int indexSubsequenceLength) throws ExecutionException {
+    ReferenceIndex(String reference, int indexSubsequenceLength) throws ExecutionException {
         this.indexSubsequenceLength = indexSubsequenceLength;
         for (int i = 0; i < reference.length() - indexSubsequenceLength; i++) {
             String subReference = reference.substring(i, i + indexSubsequenceLength);
@@ -26,7 +25,7 @@ public class ReferenceIndex {
         }
     }
 
-    public List<Integer> find(String searchString) throws ExecutionException {
+    List<Integer> find(String searchString) throws ExecutionException {
         if (searchString.length() == indexSubsequenceLength){
             return index.get(searchString);
         }

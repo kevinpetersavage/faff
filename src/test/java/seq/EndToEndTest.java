@@ -19,6 +19,7 @@ class EndToEndTest {
     private static final int readLength = 150;
     private static final int numberOfReads = 100;
     private static final int indexSequenceLength = 32;
+
     private final Random random = new Random();
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private final TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
@@ -32,7 +33,7 @@ class EndToEndTest {
         Seq<SingleRead> singleReads = regroupToSingleReads(reads);
 
         BlockingDeque<SingleRead> inQueue = new LinkedBlockingDeque<>();
-        Queue<AlignedReadSegment> outQueue = new LinkedBlockingDeque<>();
+        Queue<Alignment> outQueue = new LinkedBlockingDeque<>();
 
         ReferenceIndex referenceIndex = new ReferenceIndex(reference, indexSequenceLength);
         ReadCache readCache = new ReadCache(indexSequenceLength);
@@ -64,7 +65,10 @@ class EndToEndTest {
 
     private Set<Tuple2<String, AlignedReadSegment>> readsFrom(String reference) {
         return seq(random.ints(0, referenceLength - readLength))
-                .map(i -> tuple(reference.substring(i, i + readLength), new AlignedReadSegment(UUID.randomUUID(), i)))
+                .map(i -> tuple(
+                        reference.substring(i, i + readLength),
+                        new AlignedReadSegment(UUID.randomUUID(), i, i + readLength)
+                ))
                 .limit(numberOfReads)
                 .toSet();
     }
