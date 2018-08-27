@@ -1,15 +1,17 @@
 package seq;
 
+import java.util.UUID;
+
 public class SourceImageLocation {
     private final int imageId;
-    private final int locationWithinImage;
+    private final UUID locationWithinImage;
 
-    public SourceImageLocation(Integer imageId, Integer locationWithinImage) {
+    public SourceImageLocation(Integer imageId, UUID locationWithinImage) {
         this.imageId = imageId;
         this.locationWithinImage = locationWithinImage;
     }
 
-    public int getLocationWithinImage() {
+    public UUID getLocationWithinImage() {
         return locationWithinImage;
     }
 

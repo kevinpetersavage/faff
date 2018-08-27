@@ -1,5 +1,7 @@
 package seq;
 
+import java.util.UUID;
+
 public class SingleRead {
     private final char nucleotide;
     private final SourceImageLocation sourceImageLocation;
@@ -21,7 +23,7 @@ public class SingleRead {
         return sourceImageLocation.getImageId();
     }
 
-    public int getLocationWithImage() {
+    public UUID getLocationWithImage() {
         return sourceImageLocation.getLocationWithinImage();
     }
 }

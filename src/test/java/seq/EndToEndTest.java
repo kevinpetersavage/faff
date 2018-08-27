@@ -1,6 +1,7 @@
 package seq;
 
 import org.jooq.lambda.Seq;
+import org.jooq.lambda.tuple.Tuple2;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -11,55 +12,59 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.jooq.lambda.Seq.seq;
+import static org.jooq.lambda.tuple.Tuple.tuple;
 
-public class EndToEndTest {
+class EndToEndTest {
     private static final int referenceLength = 10000;
     private static final int readLength = 150;
     private static final int numberOfReads = 100;
+    private static final int indexSequenceLength = 32;
     private final Random random = new Random();
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private final TestSequenceFactory testSequenceFactory = new TestSequenceFactory();
 
     @Test
-    public void test() throws ExecutionException {
+    void test() throws ExecutionException {
         String reference = testSequenceFactory.createRandomSequence(referenceLength);
 
-        Set<AlignedReadSegment> reads = readsFrom(reference);
+        Set<Tuple2<String, AlignedReadSegment>> reads = readsFrom(reference);
+        Set<AlignedReadSegment> alignments = seq(reads).map(Tuple2::v2).toSet();
         Seq<SingleRead> singleReads = regroupToSingleReads(reads);
 
         BlockingDeque<SingleRead> inQueue = new LinkedBlockingDeque<>();
         Queue<AlignedReadSegment> outQueue = new LinkedBlockingDeque<>();
 
-        Processor processor = new Processor(new ReferenceIndex(reference, readLength), new ReadCache(readLength));
+        ReferenceIndex referenceIndex = new ReferenceIndex(reference, indexSequenceLength);
+        ReadCache readCache = new ReadCache(indexSequenceLength);
+        MultiMatchCombiner combiner = new MultiMatchCombiner();
+        Processor processor = new Processor(referenceIndex, readCache, combiner);
         executorService.submit(new Sequence(processor, inQueue, outQueue));
 
         inQueue.addAll(singleReads.toList());
 
-        await().atMost(5, SECONDS).untilAsserted(() -> queueAndListAreEqual(outQueue, reads));
+        await().atMost(5, SECONDS).untilAsserted(() -> queueContains(outQueue, alignments));
     }
 
-    private boolean queueAndListAreEqual(Queue outQueue, Set<AlignedReadSegment> reads) {
-        assertThat(new HashSet<>(Arrays.asList(outQueue.toArray()))).isEqualTo(reads);
+    private boolean queueContains(Queue outQueue, Set<AlignedReadSegment> reads) {
+        assertThat(new HashSet<>(Arrays.asList(outQueue.toArray()))).contains(reads.toArray());
         return true;
     }
 
-    private Seq<SingleRead> regroupToSingleReads(Set<AlignedReadSegment> reads) {
-        return seq(reads)
-                .zip(Seq.range(0, reads.size()))
-                .flatMap(t -> createSingleReads(t.v1, t.v2));
+    private Seq<SingleRead> regroupToSingleReads(Set<Tuple2<String, AlignedReadSegment>> reads) {
+        return seq(reads).flatMap(t -> createSingleReads(t.v1, t.v2.getReadId()));
     }
 
-    private Stream<SingleRead> createSingleReads(AlignedReadSegment read, Integer locationWithImage) {
+    private Stream<SingleRead> createSingleReads(String sequence, UUID locationWithImage) {
         return Seq
-                .range(0, read.getSequence().length())
+                .range(0, sequence.length())
                 .map(imageItWouldBeReadFrom ->
-                        new SingleRead(read.getSequence().charAt(imageItWouldBeReadFrom),
+                        new SingleRead(sequence.charAt(imageItWouldBeReadFrom),
                                 new SourceImageLocation(imageItWouldBeReadFrom, locationWithImage)));
     }
 
-    private Set<AlignedReadSegment> readsFrom(String reference) {
+    private Set<Tuple2<String, AlignedReadSegment>> readsFrom(String reference) {
         return seq(random.ints(0, referenceLength - readLength))
-                .map(i -> new AlignedReadSegment(reference.substring(i, i + readLength), i))
+                .map(i -> tuple(reference.substring(i, i + readLength), new AlignedReadSegment(UUID.randomUUID(), i)))
                 .limit(numberOfReads)
                 .toSet();
     }

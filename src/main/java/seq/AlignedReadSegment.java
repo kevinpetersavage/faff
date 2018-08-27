@@ -4,17 +4,19 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.UUID;
+
 public class AlignedReadSegment {
-    private final String sequence;
+    private final UUID readId;
     private final int location;
 
-    public AlignedReadSegment(String sequence, int location) {
-        this.sequence = sequence;
+    public AlignedReadSegment(UUID readId, int location) {
+        this.readId = readId;
         this.location = location;
     }
 
-    public String getSequence() {
-        return sequence;
+    public UUID getReadId() {
+        return readId;
     }
 
     @Override
