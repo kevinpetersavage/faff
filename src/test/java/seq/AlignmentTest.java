@@ -1,6 +1,6 @@
 package seq;
 
-import org.jooq.lambda.tuple.Range;
+import com.google.common.collect.Range;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -24,7 +24,9 @@ class AlignmentTest {
         Alignment original = new Alignment(readId, 10, 15);
         Alignment alignment = original.mergeIn(new AlignedReadSegment(readId, 20, 30));
 
-        assertThat(alignment).isEqualTo(new Alignment(readId, Arrays.asList(new Range<>(10, 15), new Range<>(20, 30))));
+        assertThat(alignment).isEqualTo(new Alignment(readId, Arrays.asList(
+                Range.closedOpen(10, 15),
+                Range.closedOpen(20, 30))));
     }
 
     @Test

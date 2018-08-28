@@ -24,14 +24,14 @@ class MultiMatchCombiner {
     List<Alignment> combineWithPrevious(List<AlignedReadSegment> segments) {
         Seq<Seq<Alignment>> matches = seq(segments)
                 .map(seg -> seq(alignmentsSoFar.get(seg.getReadId())).filter(al -> al.intersects(seg)));
-        Seq<Tuple3<UUID, Alignment, Alignment>> newAlignments = zip(segments, matches)
-                .flatMap(t -> seq(t.v2).map(alignment -> tuple(t.v1.getReadId(), alignment, alignment.mergeIn(t.v1))));
+        List<Tuple3<UUID, Alignment, Alignment>> newAlignments = zip(segments, matches)
+                .flatMap(t -> seq(t.v2).map(alignment -> tuple(t.v1.getReadId(), alignment, alignment.mergeIn(t.v1))))
+                .toList();
         newAlignments.forEach(t -> {
             alignmentsSoFar.remove(t.v1, t.v2);
             alignmentsSoFar.put(t.v1, t.v3);
         });
 
-        AlignedReadSegment segment = segments.get(0);
-        return Collections.singletonList(new Alignment(segment.getReadId(), segment.getStart(), segment.getEnd()));
+        return seq(segments).map(AlignedReadSegment::getReadId).map(alignmentsSoFar::get).flatMap(Seq::seq).toList();
     }
 }

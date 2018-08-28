@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jooq.lambda.Seq;
 
 import java.util.*;
 
@@ -43,12 +44,14 @@ public class Alignment {
     }
 
     Alignment mergeIn(AlignedReadSegment segment) {
-        seq(ranges).map(r -> r.span())
+        Range<Integer> segmentRange = segment.getRange();
+        Seq<Range<Integer>> newRanges = seq(ranges).
+                map(r -> r.isConnected(segment.getRange()) ? r.span(segment.getRange()) : r);
+        ImmutableList.Builder<Range<Integer>> builder = ImmutableList.<Range<Integer>>builder().addAll(newRanges);
+        if (intersects(segment)){
+            builder = builder.add(segmentRange);
+        }
 
-        ImmutableList<Range<Integer>> newRanges = ImmutableList.<Range<Integer>>builder()
-                .addAll(this.ranges)
-                .add(segment.getRange())
-                .build();
-        return new Alignment(locationWithinImage, newRanges);
+        return new Alignment(locationWithinImage, builder.build());
     }
 }

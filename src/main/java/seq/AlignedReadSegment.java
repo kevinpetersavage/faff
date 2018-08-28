@@ -13,7 +13,7 @@ public class AlignedReadSegment {
 
     AlignedReadSegment(UUID readId, int start, int end) {
         this.readId = readId;
-        this.range = new Range<>(start, end);
+        this.range = Range.closedOpen(start, end);
     }
 
     public UUID getReadId() {
@@ -39,7 +39,7 @@ public class AlignedReadSegment {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int getStart() {
+    int getStart() {
         return range.lowerEndpoint();
     }
 
