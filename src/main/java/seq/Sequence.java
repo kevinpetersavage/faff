@@ -1,7 +1,6 @@
 package seq;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ExecutionException;

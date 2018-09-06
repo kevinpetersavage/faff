@@ -1,9 +1,9 @@
 package seq;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -24,7 +24,7 @@ class AlignmentTest {
         Alignment original = new Alignment(readId, 10, 15);
         Alignment alignment = original.mergeIn(new AlignedReadSegment(readId, 20, 30));
 
-        assertThat(alignment).isEqualTo(new Alignment(readId, Arrays.asList(
+        assertThat(alignment).isEqualTo(new Alignment(readId, ImmutableSet.of(
                 Range.closedOpen(10, 15),
                 Range.closedOpen(20, 30))));
     }

@@ -6,7 +6,6 @@ import org.jooq.lambda.Seq;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,11 +21,16 @@ class MultiMatchCombiner {
     }
 
     List<Alignment> combineWithPrevious(List<AlignedReadSegment> segments) {
-        Seq<Seq<Alignment>> matches = seq(segments)
-                .map(seg -> seq(alignmentsSoFar.get(seg.getReadId())).filter(al -> al.intersects(seg)));
-        List<Tuple3<UUID, Alignment, Alignment>> newAlignments = zip(segments, matches)
-                .flatMap(t -> seq(t.v2).map(alignment -> tuple(t.v1.getReadId(), alignment, alignment.mergeIn(t.v1))))
-                .toList();
+        Seq<List<Alignment>> alignments = seq(segments).map(s -> seq(alignmentsSoFar.get(s.getReadId())).toList());
+        List<Tuple2<AlignedReadSegment, List<Alignment>>> zip = zip(segments, alignments).toList();
+        Seq<Tuple2<AlignedReadSegment, Alignment>> matches = seq(zip).flatMap(t -> seq(t.v2).map(a -> tuple(t.v1, a)));
+
+        Seq<AlignedReadSegment> nonMatches = seq(zip).filter(t -> t.v2.isEmpty()).map(Tuple2::v1);
+        nonMatches.forEach(nonMatch -> alignmentsSoFar.put(nonMatch.getReadId(),
+                new Alignment(nonMatch.getReadId(), nonMatch.getStart(), nonMatch.getEnd())));
+
+        Seq<Tuple3<UUID, Alignment, Alignment>> newAlignments = matches
+                .map(t -> tuple(t.v1.getReadId(), t.v2, t.v2.mergeIn(t.v1)));
         newAlignments.forEach(t -> {
             alignmentsSoFar.remove(t.v1, t.v2);
             alignmentsSoFar.put(t.v1, t.v3);
