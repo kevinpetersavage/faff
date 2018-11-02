@@ -35,6 +35,10 @@ public class Alignment {
         return EqualsBuilder.reflectionEquals(this, that);
     }
 
+    public Set<Range<Integer>> getRanges() {
+        return ranges;
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);

@@ -46,8 +46,14 @@ class EndToEndTest {
         await().atMost(5, SECONDS).untilAsserted(() -> queueContains(outQueue, alignments));
     }
 
-    private boolean queueContains(Queue outQueue, Set<AlignedReadSegment> reads) {
-        assertThat(new HashSet<>(Arrays.asList(outQueue.toArray()))).contains(reads.toArray());
+    private boolean queueContains(Queue<Alignment> outQueue, Set<AlignedReadSegment> reads) {
+        seq(reads).map(AlignedReadSegment::getRange).forEach(expected ->
+            assertThat(
+                    seq(outQueue).map(Alignment::getRanges).flatMap(Seq::seq).toSet()
+            ).contains(
+                    expected
+            )
+        );
         return true;
     }
 
